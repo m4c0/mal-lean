@@ -119,8 +119,6 @@ class Runner():
     def read_to_prompt(self, prompts, timeout):
         end_time = time.time() + timeout
         while time.time() < end_time:
-            [outs,_,_] = select([self.stdout], [], [], 1)
-            if self.stdout in outs:
                 new_data = self.stdout.read(1)
                 new_data = new_data.decode("utf-8") if IS_PY_3 else new_data
                 #print("new_data: '%s'" % new_data)
