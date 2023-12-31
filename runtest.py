@@ -5,11 +5,8 @@ import os, sys, re
 import argparse, time
 import signal, atexit
 
-from subprocess import Popen, STDOUT, PIPE
+from subprocess import Popen, STDOUT, PIPE, CREATE_NEW_PROCESS_GROUP
 from select import select
-
-# Pseudo-TTY and terminal manipulation
-import pty, array, fcntl, termios
 
 IS_PY_3 = sys.version_info[0] == 3
 
@@ -84,13 +81,17 @@ class Runner():
         env['INPUTRC'] = '/dev/null'
         env['PERL_RL'] = 'false'
         if no_pty:
+            # No setid on windows
+            # https://stackoverflow.com/questions/38083168/attributeerror-module-os-has-no-attribute-setsid
             self.p = Popen(args, bufsize=0,
                            stdin=PIPE, stdout=PIPE, stderr=STDOUT,
-                           preexec_fn=os.setsid,
+                           creationflags=CREATE_NEW_PROCESS_GROUP,
                            env=env)
             self.stdin = self.p.stdin
             self.stdout = self.p.stdout
         else:
+            raise "cant use pty on windows"
+
             # provide tty to get 'interactive' readline to work
             master, slave = pty.openpty()
 
