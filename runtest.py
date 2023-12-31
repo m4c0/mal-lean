@@ -148,7 +148,7 @@ class Runner():
         #print "cleaning up"
         if self.p:
             try:
-                os.killpg(self.p.pid, signal.SIGTERM)
+                os.kill(self.p.pid, signal.SIGTERM)
             except OSError:
                 pass
             self.p = None
