@@ -3,7 +3,7 @@
 
 read_str(Str) -> read_form(tokenise(Str, []), []).
 
-read_form(Toks, _) -> ["A"|Toks].
+read_form(Toks, _) -> {symbol, "PQP"}.
 
 tokenise("", Toks) -> lists:reverse(Toks);
 tokenise("~@" ++ Str, Toks) -> tokenise(Str, ["~@"|Toks]);
