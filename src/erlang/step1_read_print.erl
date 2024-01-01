@@ -1,5 +1,4 @@
 -module(step1_read_print).
--import(reader, []).
 -export([main/1]).
 
 main(A) ->
@@ -8,14 +7,13 @@ main(A) ->
     {error, _} -> io:fwrite("error somewhere");
     Line ->
       io:nl(), %% Required on Windows
-      io:fwrite("~s", [rep(string:chomp(Line))]),
+      io:fwrite("~s", [rep(Line)]),
       io:nl(),
       main(A)
   end.
 
 rep(X) -> print(eval(read(X))).
 
-read(X) -> X.
+read(X) -> reader:read_str(X).
 eval(X) -> X.
-print(X) -> X.
-           
+print(X) -> printer:pr_str(X).

@@ -1,13 +1,15 @@
 -module(reader).
--export([tokenise/2]).
+-export([read_str/1]).
 
-%% read_str() -> read_form(tokenise(), []).
+read_str(Str) -> read_form(tokenise(Str, []), []).
+
+read_form(Toks, _) -> ["A"|Toks].
 
 tokenise("", Toks) -> lists:reverse(Toks);
 tokenise("~@" ++ Str, Toks) -> tokenise(Str, ["~@"|Toks]);
 tokenise([Chr|Str], Toks) ->
   case Chr of
-    C when C == 32; C == $,
+    C when C == $\s; C == $,; C == $\n; C == $\r; C == $\t
            -> tokenise(Str, Toks);
 
     C when C == $[; C == $]; C == ${; C == $}; C == $(; C == $);
@@ -38,7 +40,7 @@ take_comment([C|Str], Result) -> take_comment(Str, [C|Result]).
 take_symbol("", Result) -> {lists:reverse(Result), ""};
 take_symbol([Chr|Str], Result) ->
   case Chr of
-    C when C == 32; C == $,;
+    C when C == $\s; C == $,; C == $\n; C == $\r; C == $\t;
            C == $[; C == $]; C == ${; C == $}; C == $(; C == $);
            C == $'; C == $`; C == $^; C == $~; C == $@;
            C == $"; C == $;
