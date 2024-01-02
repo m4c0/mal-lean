@@ -30,6 +30,8 @@ eval({list, L}, Env) ->
     {list, [{lambda, Fn}|NL]} -> Fn(NL);
     X -> X
   end;
+eval({vector, V}, Env) -> eval_ast({vector, V}, Env);
+eval({hashmap, V}, Env) -> eval_ast({hashmap, V}, Env);
 eval(X, Env) -> eval_ast(X, Env).
 print(X) -> printer:pr_str(X, true).
 
@@ -41,4 +43,10 @@ eval_ast({symbol, X}, Env) ->
 eval_ast({list, L}, Env) ->
   NL = lists:map(fun (V) -> eval(V, Env) end, L),
   {list, NL};
+eval_ast({vector, L}, Env) ->
+  NL = lists:map(fun (V) -> eval(V, Env) end, L),
+  {vector, NL};
+eval_ast({hashmap, M}, Env) ->
+  NM = maps:map(fun (_, V) -> eval(V, Env) end, M),
+  {hashmap, NM};
 eval_ast(X, _) -> X.
