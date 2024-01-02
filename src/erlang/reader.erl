@@ -7,21 +7,23 @@ read_str(Str) ->
 
 read_form([]) -> {error, "empty input", []};
 read_form(["("|Toks]) -> read_list(Toks);
+read_form(["["|Toks]) -> read_vector(Toks);
 read_form([T|Toks]) -> read_atom(T, Toks);
 read_form({error, X}) -> {error, X, []}.
 
-read_list(Toks) -> seq(Toks, []).
+read_list(Toks) -> seq(")", list, Toks, []).
+read_vector(Toks) -> seq("]", vector, Toks, []).
 
 read_atom({T, V}, Toks) -> {T, V, Toks};
 read_atom(_, _) -> {error, "invalid input", []}.
 
-seq([], _) -> {error, "unbalanced sequence", []};
-seq([")"|Toks], Acc) -> {list, lists:reverse(Acc), Toks};
-seq(Toks, Acc) ->
+seq(_, _, [], _) -> {error, "unbalanced sequence", []};
+seq(End, Tp, [End|Toks], Acc) -> {Tp, lists:reverse(Acc), Toks};
+seq(End, Tp, Toks, Acc) ->
   {T, V, Rest} = read_form(Toks),
   case T of
     error -> {T, V, Rest};
-    _ -> seq(Rest, [{T, V}|Acc])
+    _ -> seq(End, Tp, Rest, [{T, V}|Acc])
   end.
 
 %% Tokeniser
