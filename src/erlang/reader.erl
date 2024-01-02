@@ -1,10 +1,23 @@
 -module(reader).
 -export([read_str/1]).
 
-read_str(Str) -> read_form(tokenise(Str, [])).
+read_str(Str) -> read_form(tokenise(Str)).
 
-read_form(["("|Toks]) -> {list, "?"};
-read_form([S|Toks]) -> {symbol, S}.
+read_form([T]) -> read_atom(T);
+read_form(["("|Toks]) -> read_list(Toks);
+read_form(_) -> error.
+
+read_list(Toks) -> seq(Toks, []).
+
+read_atom(S) -> {symbol, S}.
+
+seq([], _) -> error;
+seq([")"], Acc) -> {list, lists:reverse(Acc)};
+seq([S|Toks], Acc) -> seq(Toks, [read_atom(S)|Acc]).
+
+%% Tokeniser
+
+tokenise(Str) -> tokenise(Str, []).
 
 tokenise("", Toks) -> lists:reverse(Toks);
 tokenise("~@" ++ Str, Toks) -> tokenise(Str, ["~@"|Toks]);
