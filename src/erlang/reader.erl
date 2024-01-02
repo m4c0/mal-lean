@@ -14,6 +14,7 @@ read_form(["`"|Toks]) -> read_quotish("quasiquote", Toks);
 read_form(["~"|Toks]) -> read_quotish("unquote", Toks);
 read_form(["~@"|Toks]) -> read_quotish("splice-unquote", Toks);
 read_form(["@"|Toks]) -> read_quotish("deref", Toks);
+read_form(["^"|Toks]) -> read_meta(Toks);
 read_form([T|Toks]) -> read_atom(T, Toks);
 read_form({error, X}) -> {error, X, []}.
 
@@ -29,6 +30,17 @@ read_quotish(Sym, Toks) ->
   case read_form(Toks) of
     {error, M, _} -> {error, M, []};
     {T, V, Rest} -> {list, [{symbol, Sym}, {T, V}], Rest}
+  end.
+
+read_meta(Toks) ->
+  case read_form(Toks) of
+    {error, M, _} -> {error, M, []};
+    {LT, LV, Rest} ->
+      case read_form(Rest) of
+        {error, M, _} -> {error, M, []};
+        {RT, RV, FinalRest} ->
+          {list, [{symbol, "with-meta"}, {RT, RV}, {LT, LV}], FinalRest}
+      end
   end.
 
 seq(_, _, [], _) -> {error, "unbalanced sequence", []};
