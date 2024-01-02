@@ -49,6 +49,10 @@ tokenise([Chr|Str], Toks) ->
       case take_comment(Str, [$;]) of
         {_, Rest} -> tokenise(Rest, Toks)
       end;
+    $: ->
+      case take_symbol(Str, [Chr]) of
+        {Sym, Rest} -> tokenise(Rest, [{keyword, Sym}|Toks])
+      end;
     _ ->
       case take_symbol(Str, [Chr]) of
         {Sym, Rest} -> tokenise(Rest, [{symbol, Sym}|Toks])
