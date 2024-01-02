@@ -1,9 +1,10 @@
 -module(reader).
 -export([read_str/1]).
 
-read_str(Str) -> read_form(tokenise(Str, []), []).
+read_str(Str) -> read_form(tokenise(Str, [])).
 
-read_form(Toks, _) -> {symbol, "PQP"}.
+read_form(["("|Toks]) -> {list, "?"};
+read_form([S|Toks]) -> {symbol, S}.
 
 tokenise("", Toks) -> lists:reverse(Toks);
 tokenise("~@" ++ Str, Toks) -> tokenise(Str, ["~@"|Toks]);
