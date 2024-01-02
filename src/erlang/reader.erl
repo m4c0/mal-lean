@@ -32,6 +32,7 @@ tokenise([Chr|Str], Toks) ->
 
 take_str("", _) -> error;
 take_str([$"|Str], Result) -> {lists:reverse([$"|Result]), Str};
+take_str([$\\,C|Str], Result) -> take_str(Str, [C|Result]);
 take_str([C|Str], Result) -> take_str(Str, [C|Result]).
 
 take_comment("", Result) -> {lists:reverse(Result), ""};
