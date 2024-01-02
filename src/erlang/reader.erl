@@ -12,7 +12,8 @@ read_form({error, X}) -> {error, X, []}.
 
 read_list(Toks) -> seq(Toks, []).
 
-read_atom(S, Toks) -> {symbol, S, Toks}.
+read_atom({T, V}, Toks) -> {T, V, Toks};
+read_atom(_, _) -> {error, "invalid input", []}.
 
 seq([], _) -> {error, "unbalanced sequence", []};
 seq([")"|Toks], Acc) -> {list, lists:reverse(Acc), Toks};
@@ -40,7 +41,7 @@ tokenise([Chr|Str], Toks) ->
     $" ->
       case take_str(Str, [$"]) of
         {error, E} -> {error, E};
-        {ValidStr, Rest} -> tokenise(Rest, [ValidStr|Toks])
+        {ValidStr, Rest} -> tokenise(Rest, [{string, ValidStr}|Toks])
       end;
     $; ->
       case take_comment(Str, [$;]) of
@@ -48,7 +49,7 @@ tokenise([Chr|Str], Toks) ->
       end;
     _ ->
       case take_symbol(Str, [Chr]) of
-        {Sym, Rest} -> tokenise(Rest, [Sym|Toks])
+        {Sym, Rest} -> tokenise(Rest, [{symbol, Sym}|Toks])
       end
   end.
 
