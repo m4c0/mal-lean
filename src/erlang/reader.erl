@@ -78,6 +78,12 @@ tokenise([Chr|Str], Toks) ->
     C when C == $[; C == $]; C == ${; C == $}; C == $(; C == $);
            C == $'; C == $`; C == $^; C == $~; C == $@
            -> tokenise(Str, [[C]|Toks]);
+
+    C when C >= $0, C =< $9 ->
+      case take_number(Str, C - $0) of
+        {Number, Rest} -> tokenise(Rest, [{number, Number}|Toks])
+      end;
+
     $" ->
       case take_str(Str) of
         {error, E} -> {error, E};
@@ -109,6 +115,10 @@ take_str([C|Str], Result) -> take_str(Str, [C|Result]).
 take_comment("", Result) -> {lists:reverse(Result), ""};
 take_comment([$\n|Str], Result) -> {lists:reverse(Result), Str};
 take_comment([C|Str], Result) -> take_comment(Str, [C|Result]).
+
+take_number([C|Str], Acc) when C >= $0, C =< $9 -> 
+  take_number(Str, Acc * 10 + (C - $0));
+take_number(X, Acc) -> {Acc, X}.
 
 take_symbol("", Result) -> {lists:reverse(Result), ""};
 take_symbol([Chr|Str], Result) ->
