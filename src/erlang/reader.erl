@@ -84,6 +84,17 @@ tokenise([Chr|Str], Toks) ->
         {Number, Rest} -> tokenise(Rest, [{number, Number}|Toks])
       end;
 
+    C when C == $- ->
+      case Str of
+        [CC|SS] when CC >= $0, CC =< $9 ->
+          {Number, Rest} = take_number(SS, CC - $0),
+          tokenise(Rest, [{number, -Number}|Toks]);
+        _ ->
+          case take_symbol(Str, [Chr]) of
+            {Sym, Rest} -> tokenise(Rest, [{symbol, Sym}|Toks])
+          end
+      end;
+
     $" ->
       case take_str(Str) of
         {error, E} -> {error, E};
