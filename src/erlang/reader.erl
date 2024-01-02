@@ -9,6 +9,11 @@ read_form([]) -> {error, "empty input", []};
 read_form(["("|Toks]) -> read_list(Toks);
 read_form(["["|Toks]) -> read_vector(Toks);
 read_form(["{"|Toks]) -> read_hashmap(Toks);
+read_form(["'"|Toks]) -> read_quotish("quote", Toks);
+read_form(["`"|Toks]) -> read_quotish("quasiquote", Toks);
+read_form(["~"|Toks]) -> read_quotish("unquote", Toks);
+read_form(["~@"|Toks]) -> read_quotish("splice-unquote", Toks);
+read_form(["@"|Toks]) -> read_quotish("deref", Toks);
 read_form([T|Toks]) -> read_atom(T, Toks);
 read_form({error, X}) -> {error, X, []}.
 
@@ -19,6 +24,12 @@ read_hashmap(Toks) -> mapseq(Toks, #{}).
 
 read_atom({T, V}, Toks) -> {T, V, Toks};
 read_atom(_, _) -> {error, "invalid input", []}.
+
+read_quotish(Sym, Toks) ->
+  case read_form(Toks) of
+    {error, M, _} -> {error, M, []};
+    {T, V, Rest} -> {list, [{symbol, Sym}, {T, V}], Rest}
+  end.
 
 seq(_, _, [], _) -> {error, "unbalanced sequence", []};
 seq(End, Tp, [End|Toks], Acc) -> {Tp, lists:reverse(Acc), Toks};
