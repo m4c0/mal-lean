@@ -16,4 +16,4 @@ rep(X) -> print(eval(read(X))).
 
 read(X) -> reader:read_str(X).
 eval(X) -> X.
-print(X) -> printer:pr_str(X).
+print(X) -> printer:pr_str(X, true).
