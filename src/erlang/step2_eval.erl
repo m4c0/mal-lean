@@ -7,10 +7,10 @@ mult(_) -> {error, "TBD"}.
 dv(_) -> {error, "TBD"}.
 
 main(A) ->
-  Env = #{"+" => fun add/1,
-          "-" => fun sub/1,
-          "*" => fun mult/1,
-          "/" => fun dv/1},
+  Env = #{"+" => {lambda, fun step2_eval:add/1},
+          "-" => {lambda, fun step2_eval:sub/1},
+          "*" => {lambda, fun step2_eval:mult/1},
+          "/" => {lambda, fun step2_eval:dv/1}},
   case io:get_line("user> ") of
     eof -> io:fwrite("eof");
     {error, X} -> io:fwrite("error: ~s", [X]);
@@ -24,5 +24,21 @@ main(A) ->
 rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
-eval(X, Env) -> X.
+eval({list, []}, _) -> {list, []};
+eval({list, L}, Env) ->
+  case eval_ast({list, L}, Env) of
+    {list, [{lambda, Fn}|NL]} -> Fn(NL);
+    X -> X
+  end;
+eval(X, Env) -> eval_ast(X, Env).
 print(X) -> printer:pr_str(X, true).
+
+eval_ast({symbol, X}, Env) ->
+  case maps:find(X, Env) of
+    {ok, V} -> V;
+    error -> {error, "unknown symbol"}
+  end;
+eval_ast({list, L}, Env) ->
+  NL = lists:map(fun (V) -> eval(V, Env) end, L),
+  {list, NL};
+eval_ast(X, _) -> X.
