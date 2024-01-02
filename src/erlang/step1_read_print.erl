@@ -4,7 +4,7 @@
 main(A) ->
   case io:get_line("user> ") of
     eof -> io:fwrite("eof");
-    {error, _} -> io:fwrite("error somewhere");
+    {error, X} -> io:fwrite("error: ~s", [X]);
     Line ->
       io:nl(), %% Required on Windows
       io:fwrite("~s", [rep(Line)]),

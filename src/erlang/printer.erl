@@ -1,7 +1,7 @@
 -module(printer).
 -export([pr_str/1]).
 
-pr_str(error) -> "error";
+pr_str({error, E}) -> "error: " ++ E;
 pr_str({symbol, S}) -> S;
 pr_str({number, N}) -> N;
 pr_str({list, L}) -> "(" ++ print_list(L) ++ ")";

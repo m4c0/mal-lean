@@ -5,6 +5,7 @@ read_str(Str) -> read_form(tokenise(Str)).
 
 read_form([T]) -> read_atom(T);
 read_form(["("|Toks]) -> read_list(Toks);
+read_form({error, X}) -> {error, X};
 read_form(_) -> error.
 
 read_list(Toks) -> seq(Toks, []).
@@ -31,6 +32,7 @@ tokenise([Chr|Str], Toks) ->
            -> tokenise(Str, [[C]|Toks]);
     $" ->
       case take_str(Str, [$"]) of
+        {error, E} -> {error, E};
         {ValidStr, Rest} -> tokenise(Rest, [ValidStr|Toks])
       end;
     $; ->
@@ -43,7 +45,7 @@ tokenise([Chr|Str], Toks) ->
       end
   end.
 
-take_str("", _) -> error;
+take_str("", _) -> {error, "EOF while reading string"};
 take_str([$"|Str], Result) -> {lists:reverse([$"|Result]), Str};
 take_str([$\\,C|Str], Result) -> take_str(Str, [C|Result]);
 take_str([C|Str], Result) -> take_str(Str, [C|Result]).
