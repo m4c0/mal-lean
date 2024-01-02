@@ -39,7 +39,7 @@ tokenise([Chr|Str], Toks) ->
            C == $'; C == $`; C == $^; C == $~; C == $@
            -> tokenise(Str, [[C]|Toks]);
     $" ->
-      case take_str(Str, [$"]) of
+      case take_str(Str) of
         {error, E} -> {error, E};
         {ValidStr, Rest} -> tokenise(Rest, [{string, ValidStr}|Toks])
       end;
@@ -53,9 +53,13 @@ tokenise([Chr|Str], Toks) ->
       end
   end.
 
+take_str(Str) -> take_str(Str, []).
 take_str("", _) -> {error, "EOF while reading string"};
-take_str([$"|Str], Result) -> {lists:reverse([$"|Result]), Str};
-take_str([$\\,C|Str], Result) -> take_str(Str, [C|Result]);
+take_str([$"|Str], Result) -> {lists:reverse(Result), Str};
+take_str([$\\,$\\|Str], Result) -> take_str(Str, [$\\|Result]);
+take_str([$\\,$n|Str], Result) -> take_str(Str, [$\n|Result]);
+take_str([$\\,$"|Str], Result) -> take_str(Str, [$"|Result]);
+take_str([$\\|_], _) -> {error, "invalid string quoting"};
 take_str([C|Str], Result) -> take_str(Str, [C|Result]).
 
 take_comment("", Result) -> {lists:reverse(Result), ""};
