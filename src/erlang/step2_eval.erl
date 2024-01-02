@@ -1,10 +1,17 @@
 -module(step2_eval).
 -export([main/1, add/1, sub/1, mult/1, dv/1]).
 
-add(_) -> {error, "TBD"}.
-sub(_) -> {error, "TBD"}.
-mult(_) -> {error, "TBD"}.
-dv(_) -> {error, "TBD"}.
+add([{number, A},{number, B}]) -> {number, A+B};
+add(_) -> {error, "invalid parameters"}.
+
+sub([{number, A},{number, B}]) -> {number, A-B};
+sub(_) -> {error, "invalid parameters"}.
+
+mult([{number, A},{number, B}]) -> {number, A*B};
+mult(_) -> {error, "invalid parameters"}.
+
+dv([{number, A},{number, B}]) -> {number, A div B};
+dv(_) -> {error, "invalid parameters"}.
 
 main(A) ->
   Env = #{"+" => {lambda, fun step2_eval:add/1},
