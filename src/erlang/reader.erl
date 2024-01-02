@@ -1,20 +1,27 @@
 -module(reader).
 -export([read_str/1]).
 
-read_str(Str) -> read_form(tokenise(Str)).
+read_str(Str) ->
+  {T, V, _} = read_form(tokenise(Str)),
+  {T, V}.
 
-read_form([T]) -> read_atom(T);
+read_form([]) -> {error, "empty input", []};
 read_form(["("|Toks]) -> read_list(Toks);
-read_form({error, X}) -> {error, X};
-read_form(_) -> error.
+read_form([T|Toks]) -> read_atom(T, Toks);
+read_form({error, X}) -> {error, X, []}.
 
 read_list(Toks) -> seq(Toks, []).
 
-read_atom(S) -> {symbol, S}.
+read_atom(S, Toks) -> {symbol, S, Toks}.
 
-seq([], _) -> error;
-seq([")"], Acc) -> {list, lists:reverse(Acc)};
-seq([S|Toks], Acc) -> seq(Toks, [read_atom(S)|Acc]).
+seq([], _) -> {error, "unbalanced sequence", []};
+seq([")"|Toks], Acc) -> {list, lists:reverse(Acc), Toks};
+seq(Toks, Acc) ->
+  {T, V, Rest} = read_form(Toks),
+  case T of
+    error -> {T, V, Rest};
+    _ -> seq(Rest, [{T, V}|Acc])
+  end.
 
 %% Tokeniser
 
@@ -37,7 +44,7 @@ tokenise([Chr|Str], Toks) ->
       end;
     $; ->
       case take_comment(Str, [$;]) of
-        {Cmt, Rest} -> tokenise(Rest, [Cmt|Toks])
+        {_, Rest} -> tokenise(Rest, Toks)
       end;
     _ ->
       case take_symbol(Str, [Chr]) of
