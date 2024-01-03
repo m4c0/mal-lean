@@ -12,7 +12,9 @@ ns() ->
              "list" => fun list/1,
              "list?" => fun listq/1,
              "println" => fun println/1,
-             "prn" => fun prn/1}).
+             "prn" => fun prn/1,
+             "pr-str" => fun prstr/1,
+             "str" => fun str/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
 add(_) -> {error, "invalid parameters"}.
@@ -41,7 +43,18 @@ listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
 println(L) -> iofmt(L, "", false).
+
 prn(L) -> iofmt(L, "", true).
+
+prstr(L) -> fmt(L, " ", true).
+
+str(L) -> fmt(L, "", false).
+
+%% helpers
+
+fmt(L, Sep, Fmt) ->
+  NL = lists:map(fun (V) -> printer:pr_str(V, Fmt) end, L),
+  {string, string:join(NL, Sep)}.
 
 iofmt([], _, _) -> io:format("~n", []), nil;
 iofmt([X|Xs], Sep, Fmt) -> 
