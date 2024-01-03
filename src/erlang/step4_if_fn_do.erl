@@ -4,6 +4,7 @@
 main(_) ->
   Env = env:new(nil),
   maps:foreach(fun (K, V) -> env:set(Env, K, V) end, core:ns()),
+  rep("(def! not (fn* (a) (if a false true)))", Env),
   repl(Env).
 
 repl(Env) ->
