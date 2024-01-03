@@ -11,6 +11,7 @@ ns() ->
              "empty?" => fun empty/1,
              "list" => fun list/1,
              "list?" => fun listq/1,
+             "println" => fun println/1,
              "prn" => fun prn/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
@@ -39,8 +40,10 @@ listq([{seq, _, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
-prn(L) -> prn(L, "").
-prn([], _) -> io:format("~n", []), nil;
-prn([X|Xs], Sep) -> 
-  io:format("~s~s", [Sep, printer:pr_str(X, true)]),
-  prn(Xs, " ").
+println(L) -> iofmt(L, "", false).
+prn(L) -> iofmt(L, "", true).
+
+iofmt([], _, _) -> io:format("~n", []), nil;
+iofmt([X|Xs], Sep, Fmt) -> 
+  io:format("~s~s", [Sep, printer:pr_str(X, Fmt)]),
+  iofmt(Xs, " ", Fmt).
