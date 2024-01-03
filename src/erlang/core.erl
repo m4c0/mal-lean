@@ -45,6 +45,7 @@ lte(_) -> {error, "invalid parameters"}.
 gte([{number, A},{number, B}]) -> {boolean, A >= B};
 gte(_) -> {error, "invalid parameters"}.
 
+eq([{seq, _, A},{seq, _, B}]) -> seq_eq(A, B);
 eq([A,B]) -> {boolean, A == B};
 eq(_) -> {error, "invalid parameters for ="}.
 
@@ -80,3 +81,11 @@ iofmt([], _, _) -> io:format("~n", []), nil;
 iofmt([X|Xs], Sep, Fmt) -> 
   io:format("~s~s", [Sep, printer:pr_str(X, Fmt)]),
   iofmt(Xs, " ", Fmt).
+
+seq_eq([], []) -> {boolean, true};
+seq_eq([A|AA],[B|BB]) ->
+  case eq([A, B]) of
+    {boolean, true} -> seq_eq(AA, BB);
+    X -> X
+  end;
+seq_eq(_, _) -> {boolean, false}.
