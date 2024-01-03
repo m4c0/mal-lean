@@ -1,11 +1,16 @@
 -module(reader).
 -export([read_str/1]).
+%% macros for syntatic sugar
+-define(Err(X), {error, X}).
+-define(Err2(X), {?Err(X), []}).
+-define(ErrC, {?Err(X), _} -> ?Err2(X)).
+-define(Sym(X), {symbol, X}).
 
 read_str(Str) ->
-  {T, V, _} = read_form(tokenise(Str)),
-  {T, V}.
+  {T, _} = read_form(tokenise(Str)),
+  T.
 
-read_form([]) -> {error, "empty input", []};
+read_form([]) -> ?Err2("empty input");
 read_form(["("|Toks]) -> read_list(Toks);
 read_form(["["|Toks]) -> read_vector(Toks);
 read_form(["{"|Toks]) -> read_hashmap(Toks);
@@ -16,55 +21,52 @@ read_form(["~@"|Toks]) -> read_quotish("splice-unquote", Toks);
 read_form(["@"|Toks]) -> read_quotish("deref", Toks);
 read_form(["^"|Toks]) -> read_meta(Toks);
 read_form([T|Toks]) -> read_atom(T, Toks);
-read_form({error, X}) -> {error, X, []}.
+read_form({error, X}) -> ?Err2(X).
 
 read_list(Toks) -> seq(")", list, Toks, []).
 read_vector(Toks) -> seq("]", vector, Toks, []).
 
 read_hashmap(Toks) -> mapseq(Toks, #{}).
 
-read_atom({symbol, "nil"}, Toks) -> {nil, nil, Toks};
-read_atom({symbol, "true"}, Toks) -> {boolean, true, Toks};
-read_atom({symbol, "false"}, Toks) -> {boolean, false, Toks};
-read_atom({T, V}, Toks) -> {T, V, Toks};
-read_atom(_, _) -> {error, "invalid input", []}.
+read_atom({symbol, "nil"}, Toks) -> {nil, Toks};
+read_atom({symbol, "true"}, Toks) -> {{boolean, true}, Toks};
+read_atom({symbol, "false"}, Toks) -> {{boolean, false}, Toks};
+read_atom(T, Toks) -> {T, Toks}.
 
 read_quotish(Sym, Toks) ->
   case read_form(Toks) of
-    {error, M, _} -> {error, M, []};
-    {T, V, Rest} -> {list, [{symbol, Sym}, {T, V}], Rest}
+    ?ErrC;
+    {T, Rest} -> {{list, [?Sym(Sym), T]}, Rest}
   end.
 
 read_meta(Toks) ->
   case read_form(Toks) of
-    {error, M, _} -> {error, M, []};
-    {LT, LV, Rest} ->
+    {{error, M}, _} -> ?Err2(M);
+    {LHS, Rest} ->
       case read_form(Rest) of
-        {error, M, _} -> {error, M, []};
-        {RT, RV, FinalRest} ->
-          {list, [{symbol, "with-meta"}, {RT, RV}, {LT, LV}], FinalRest}
+        {{error, M}, _} -> ?Err2(M);
+        {RHS, FinalRest} -> {{list, [?Sym("with-meta"), RHS, LHS]}, FinalRest}
       end
   end.
 
-seq(_, _, [], _) -> {error, "unbalanced sequence", []};
-seq(End, Tp, [End|Toks], Acc) -> {Tp, lists:reverse(Acc), Toks};
+seq(_, _, [], _) -> ?Err2("unbalanced sequence");
+seq(End, Tp, [End|Toks], Acc) -> {{Tp, lists:reverse(Acc)}, Toks};
 seq(End, Tp, Toks, Acc) ->
-  {T, V, Rest} = read_form(Toks),
-  case T of
-    error -> {T, V, Rest};
-    _ -> seq(End, Tp, Rest, [{T, V}|Acc])
+  case read_form(Toks) of
+    ?ErrC;
+    {T, Rest} -> seq(End, Tp, Rest, [T|Acc])
   end.
 
-mapseq([], _) -> {error, "unbalanced map", []};
-mapseq(["}"|Toks], Acc) -> {hashmap, Acc, Toks};
+mapseq([], _) -> ?Err2("unbalanced map");
+mapseq(["}"|Toks], Acc) -> {{hashmap, Acc}, Toks};
 mapseq([K,V|Toks], Acc) when V =/= "}" ->
   case K of
     {KT, _} when KT == string; KT == keyword ->
       case read_form([V|Toks]) of
-        {error, M, _} -> {error, M, []};
-        {FT, FV, Rest} -> mapseq(Rest, Acc#{K => {FT, FV}})
+        ?ErrC;
+        {F, Rest} -> mapseq(Rest, Acc#{K => F})
       end;
-    _ -> {error, "invalid key type", []}
+    _ -> ?Err2("invalid key type")
   end.
 
 %% Tokeniser
@@ -100,7 +102,7 @@ tokenise([Chr|Str], Toks) ->
 
     $" ->
       case take_str(Str) of
-        {error, E} -> {error, E};
+        {error, E} -> ?Err(E);
         {ValidStr, Rest} -> tokenise(Rest, [{string, ValidStr}|Toks])
       end;
     $; ->
@@ -118,12 +120,12 @@ tokenise([Chr|Str], Toks) ->
   end.
 
 take_str(Str) -> take_str(Str, []).
-take_str("", _) -> {error, "EOF while reading string"};
+take_str("", _) -> ?Err("EOF while reading string");
 take_str([$"|Str], Result) -> {lists:reverse(Result), Str};
 take_str([$\\,$\\|Str], Result) -> take_str(Str, [$\\|Result]);
 take_str([$\\,$n|Str], Result) -> take_str(Str, [$\n|Result]);
 take_str([$\\,$"|Str], Result) -> take_str(Str, [$"|Result]);
-take_str([$\\|_], _) -> {error, "invalid string quoting"};
+take_str([$\\|_], _) -> ?Err("invalid string quoting");
 take_str([C|Str], Result) -> take_str(Str, [C|Result]).
 
 take_comment("", Result) -> {lists:reverse(Result), ""};

@@ -3,7 +3,7 @@
 
 pr_str({error, E}, _) -> "error: " ++ E;
 pr_str({lambda, _}, _) -> "#<function>";
-pr_str({nil, _}, _) -> "nil";
+pr_str(nil, _) -> "nil";
 pr_str({boolean, true}, _) -> "true";
 pr_str({boolean, false}, _) -> "false";
 pr_str({symbol, S}, _) -> S;
