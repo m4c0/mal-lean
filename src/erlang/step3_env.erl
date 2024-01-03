@@ -33,6 +33,10 @@ rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
 eval({list, []}, _) -> {list, []};
+eval({list, [{symbol, "def!"}|_]}, _) ->
+  {error, "def!ed"};
+eval({list, [{symbol, "let*"}|_]}, _) ->
+  {error, "let*ed"};
 eval({list, L}, Env) ->
   case eval_ast({list, L}, Env) of
     {list, [{lambda, Fn}|NL]} -> Fn(NL);
