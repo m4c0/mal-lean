@@ -46,6 +46,15 @@ eval({list, [{symbol, "do"}|L]}, Env) ->
   end;
 eval({list, [{symbol, "if"},Cond,T]}, Env) -> eval_if(Cond, T, {nil, nil}, Env);
 eval({list, [{symbol, "if"},Cond,T,F]}, Env) -> eval_if(Cond, T, F, Env);
+eval({list, [{symbol, "fn*"},{Seq, Binds},Body]}, Env) when Seq == list; Seq == vector ->
+  {lambda, fun (Exprs) -> 
+               case env:new(Env, Binds, Exprs) of
+                 {error, X} -> {error, X};
+                 NEnv -> eval(Body, NEnv)
+               end
+           end};
+eval({list, [{symbol, "fn*"}|_]}, _) ->
+  {error, "invalid fn* signature"};
 eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   case eval(V, Env) of
     {error, X} -> {error, X};
