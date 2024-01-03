@@ -11,6 +11,7 @@ ns() ->
              ">" => fun gt/1,
              "<=" => fun lte/1,
              ">=" => fun gte/1,
+             "=" => fun eq/1,
              "count" => fun count/1,
              "empty?" => fun empty/1,
              "list" => fun list/1,
@@ -43,6 +44,9 @@ lte(_) -> {error, "invalid parameters"}.
 
 gte([{number, A},{number, B}]) -> {boolean, A >= B};
 gte(_) -> {error, "invalid parameters"}.
+
+eq([A,B]) -> {boolean, A == B};
+eq(_) -> {error, "invalid parameters for ="}.
 
 count([{seq, _, L}]) -> {number, length(L)};
 count([nil]) -> {number, 0};
