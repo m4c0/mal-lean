@@ -2,6 +2,9 @@
 -export([pr_str/2]).
 
 pr_str({error, E}, _) -> "error: " ++ E;
+pr_str({nil, _}, _) -> "nil";
+pr_str({boolean, true}, _) -> "true";
+pr_str({boolean, false}, _) -> "false";
 pr_str({symbol, S}, _) -> S;
 pr_str({keyword, S}, _) -> S;
 pr_str({number, N}, _) -> integer_to_list(N);

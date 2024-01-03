@@ -23,6 +23,9 @@ read_vector(Toks) -> seq("]", vector, Toks, []).
 
 read_hashmap(Toks) -> mapseq(Toks, #{}).
 
+read_atom({symbol, "nil"}, Toks) -> {nil, nil, Toks};
+read_atom({symbol, "true"}, Toks) -> {boolean, true, Toks};
+read_atom({symbol, "false"}, Toks) -> {boolean, false, Toks};
 read_atom({T, V}, Toks) -> {T, V, Toks};
 read_atom(_, _) -> {error, "invalid input", []}.
 
