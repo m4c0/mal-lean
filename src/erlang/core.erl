@@ -25,17 +25,17 @@ mult(_) -> {error, "invalid parameters"}.
 dv([{number, A},{number, B}]) -> {number, A div B};
 dv(_) -> {error, "invalid parameters"}.
 
-count([{seq, Seq, L}]) when Seq == list; Seq == vector -> {number, length(L)};
+count([{seq, _, L}]) -> {number, length(L)};
 count([nil]) -> {number, 0};
 count(_) -> {error, "invalid parameters for count"}.
 
-empty([{seq, Seq, []}]) when Seq == list; Seq == vector -> {boolean, true};
+empty([{seq, _, []}]) -> {boolean, true};
 empty([_]) -> {boolean, false};
 empty(_) -> {error, "invalid parameters for empty?"}.
 
 list(X) -> {seq, list, X}.
 
-listq([{seq, Seq, _}]) when Seq == list; Seq == vector -> {boolean, true};
+listq([{seq, _, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 

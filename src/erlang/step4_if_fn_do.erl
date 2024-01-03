@@ -35,7 +35,7 @@ eval_ast({symbol, X}, Env) ->
     {ok, V} -> V;
     error -> {error, io_lib:format("~s not found", [X])}
   end;
-eval_ast({seq, Seq, L}, Env) when Seq == list; Seq == vector ->
+eval_ast({seq, Seq, L}, Env) ->
   Fn = fun (V, Acc) when is_list(Acc) ->
            case eval(V, Env) of
              {error, X} -> {error, X};
@@ -82,7 +82,7 @@ eval_list([{symbol, "do"}|L], Env) ->
   end;
 eval_list([{symbol, "if"},Cond,T], Env) -> eval_if(Cond, T, nil, Env);
 eval_list([{symbol, "if"},Cond,T,F], Env) -> eval_if(Cond, T, F, Env);
-eval_list([{symbol, "fn*"},{seq,Seq, Binds},Body], Env) when Seq == list; Seq == vector ->
+eval_list([{symbol, "fn*"},{seq,_,Binds},Body], Env) ->
   {lambda, fun (Exprs) -> 
                case env:new(Env, Binds, Exprs) of
                  {error, X} -> {error, X};
@@ -98,7 +98,7 @@ eval_list([{symbol, "def!"},{symbol, K},V], Env) ->
   end;
 eval_list([{symbol, "def!"}|_], _) ->
   {error, "invalid def! signature"};
-eval_list([{symbol, "let*"},{seq,Seq, As},P], Env) when Seq == list; Seq == vector ->
+eval_list([{symbol, "let*"},{seq,_,As},P], Env) ->
   NEnv = env:new(Env),
   case bind(As, NEnv) of
     ok -> eval(P, NEnv);
