@@ -7,6 +7,10 @@ ns() ->
              "-" => fun sub/1,
              "*" => fun mult/1,
              "/" => fun dv/1,
+             "<" => fun lt/1,
+             ">" => fun gt/1,
+             "<=" => fun lte/1,
+             ">=" => fun gte/1,
              "count" => fun count/1,
              "empty?" => fun empty/1,
              "list" => fun list/1,
@@ -27,6 +31,18 @@ mult(_) -> {error, "invalid parameters"}.
 
 dv([{number, A},{number, B}]) -> {number, A div B};
 dv(_) -> {error, "invalid parameters"}.
+
+lt([{number, A},{number, B}]) -> {boolean, A < B};
+lt(_) -> {error, "invalid parameters"}.
+
+gt([{number, A},{number, B}]) -> {boolean, A > B};
+gt(_) -> {error, "invalid parameters"}.
+
+lte([{number, A},{number, B}]) -> {boolean, A =< B};
+lte(_) -> {error, "invalid parameters"}.
+
+gte([{number, A},{number, B}]) -> {boolean, A >= B};
+gte(_) -> {error, "invalid parameters"}.
 
 count([{seq, _, L}]) -> {number, length(L)};
 count([nil]) -> {number, 0};
