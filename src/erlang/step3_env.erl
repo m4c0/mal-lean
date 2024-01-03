@@ -32,6 +32,8 @@ repl(Env) ->
       repl(Env)
   end.
 
+%% read-eval-print
+
 rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
@@ -44,8 +46,12 @@ eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   end;
 eval({list, [{symbol, "def!"}|_]}, _) ->
   {error, "invalid def! signature"};
-eval({list, [{symbol, "let*"},{Seq, As},P]}, _) when Seq == list; Seq == vector ->
-  {error, "got let"};
+eval({list, [{symbol, "let*"},{Seq, As},P]}, Env) when Seq == list; Seq == vector ->
+  NEnv = env:new(Env),
+  case bind(As, NEnv) of
+    ok -> eval(P, NEnv);
+    X -> X
+  end;
 eval({list, [{symbol, "let*"}|_]}, _) ->
   {error, "invalid let* signature"};
 eval({list, L}, Env) ->
@@ -58,6 +64,8 @@ eval({hashmap, V}, Env) -> eval_ast({hashmap, V}, Env);
 eval(X, Env) -> eval_ast(X, Env).
 
 print(X) -> printer:pr_str(X, true).
+
+%% eval_ast
 
 eval_ast({symbol, X}, Env) ->
   case env:get(Env, X) of
@@ -89,3 +97,15 @@ eval_ast({hashmap, M}, Env) ->
     X -> X
   end;
 eval_ast(X, _) -> X.
+
+%% others
+
+bind([], _) -> ok;
+bind([{symbol, K},V|L], Env) ->
+  case eval(V, Env) of
+    {error, X} -> {error, X};
+    VV -> env:set(Env, K, VV),
+          bind(L, Env)
+  end;
+bind(_, _) -> {error, "invalid parameter pair"}.
+
