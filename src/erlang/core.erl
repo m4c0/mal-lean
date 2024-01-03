@@ -39,7 +39,8 @@ listq([{seq, _, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
-prn([]) -> nil;
-prn([X|Xs]) -> 
-  io:format("~s~n", [printer:pr_str(X, false)]),
-  prn(Xs).
+prn(L) -> prn(L, "").
+prn([], _) -> io:format("~n", []), nil;
+prn([X|Xs], Sep) -> 
+  io:format("~s~s", [Sep, printer:pr_str(X, true)]),
+  prn(Xs, " ").
