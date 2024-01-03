@@ -61,12 +61,18 @@ eval_ast({symbol, X}, Env) ->
     {ok, V} -> V;
     error -> {error, io_lib:format("~s not found", [X])}
   end;
-eval_ast({list, L}, Env) ->
-  NL = lists:map(fun (V) -> eval(V, Env) end, L),
-  {list, NL};
-eval_ast({vector, L}, Env) ->
-  NL = lists:map(fun (V) -> eval(V, Env) end, L),
-  {vector, NL};
+eval_ast({Seq, L}, Env) when Seq == list; Seq == vector ->
+  Fn = fun (V, Acc) when is_list(Acc) ->
+           case eval(V, Env) of
+             {error, X} -> {error, X};
+             X -> [X|Acc]
+           end;
+           (_, X) -> X
+       end,
+  case lists:foldl(Fn, [], L) of
+    NL when is_list(NL) -> {Seq, lists:reverse(NL)};
+    X -> X
+  end;
 eval_ast({hashmap, M}, Env) ->
   NM = maps:map(fun (_, V) -> eval(V, Env) end, M),
   {hashmap, NM};
