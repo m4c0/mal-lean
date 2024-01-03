@@ -44,6 +44,8 @@ eval({list, [{symbol, "do"}|L]}, Env) ->
     {list, NL} -> lists:last(NL);
     X -> X
   end;
+eval({list, [{symbol, "if"},Cond,T]}, Env) -> eval_if(Cond, T, {nil, nil}, Env);
+eval({list, [{symbol, "if"},Cond,T,F]}, Env) -> eval_if(Cond, T, F, Env);
 eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   case eval(V, Env) of
     {error, X} -> {error, X};
@@ -114,3 +116,10 @@ bind([{symbol, K},V|L], Env) ->
   end;
 bind(_, _) -> {error, "invalid parameter pair"}.
 
+eval_if(Cond, T, F, Env) ->
+  case eval(Cond, Env) of
+    {boolean, false} -> eval(F, Env);
+    {nil, _} -> eval(F, Env);
+    {error, X} -> {error, X};
+    _ -> eval(T, Env)
+  end.
