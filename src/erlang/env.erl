@@ -22,6 +22,10 @@ get({Pid, Outer}, K) ->
 %% binder
 
 bind(Env, [], []) -> Env;
+bind(Env, [{symbol, "&"},{symbol, B}], Es) ->
+  set(Env, B, {seq, list, Es}),
+  Env;
+bind(_, [{symbol, "&"}|_], _) -> {error, "invalid vararg bind"};
 bind(Env, [{symbol, B}|Bs], [E|Es]) ->
   set(Env, B, E),
   bind(Env, Bs, Es);
