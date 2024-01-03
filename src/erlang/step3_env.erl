@@ -44,6 +44,8 @@ eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   end;
 eval({list, [{symbol, "def!"}|_]}, _) ->
   {error, "invalid def! signature"};
+eval({list, [{symbol, "let*"},{Seq, As},P]}, _) when Seq == list; Seq == vector ->
+  {error, "got let"};
 eval({list, [{symbol, "let*"}|_]}, _) ->
   {error, "invalid let* signature"};
 eval({list, L}, Env) ->
