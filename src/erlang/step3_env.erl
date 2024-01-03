@@ -59,7 +59,7 @@ print(X) -> printer:pr_str(X, true).
 eval_ast({symbol, X}, Env) ->
   case env:get(Env, X) of
     {ok, V} -> V;
-    error -> {error, "unknown symbol"}
+    error -> {error, io_lib:format("~s not found", [X])}
   end;
 eval_ast({list, L}, Env) ->
   NL = lists:map(fun (V) -> eval(V, Env) end, L),
