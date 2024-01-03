@@ -38,7 +38,7 @@ read(X) -> reader:read_str(X).
 
 eval({list, []}, _) -> {list, []};
 eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
-  VV = eval_ast(V, Env),
+  VV = eval(V, Env),
   env:set(Env, K, VV),
   VV;
 eval({list, [{symbol, "def!"}|_]}, _) ->
