@@ -36,7 +36,7 @@ empty(_) -> {error, "invalid parameters for empty?"}.
 
 list(X) -> {seq, list, X}.
 
-listq([{seq, _, _}]) -> {boolean, true};
+listq([{seq, list, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
