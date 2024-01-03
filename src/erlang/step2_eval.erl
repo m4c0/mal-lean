@@ -31,13 +31,14 @@ main(A) ->
 rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
-eval({list, []}, _) -> {list, []};
-eval({list, L}, Env) ->
-  case eval_ast({list, L}, Env) of
-    {list, [{lambda, Fn}|NL]} -> Fn(NL);
+eval({seq, list, []}, _) -> {seq, list, []};
+eval({seq, list, L}, Env) ->
+  case eval_ast({seq, list, L}, Env) of
+    {seq, list, [{lambda, Fn}|NL]} -> Fn(NL);
+    {seq, list, _} -> {error, "lists must start with a lambda to be eval'd"};
     X -> X
   end;
-eval({vector, V}, Env) -> eval_ast({vector, V}, Env);
+eval({seq, vector, V}, Env) -> eval_ast({seq, vector, V}, Env);
 eval({hashmap, V}, Env) -> eval_ast({hashmap, V}, Env);
 eval(X, Env) -> eval_ast(X, Env).
 print(X) -> printer:pr_str(X, true).
@@ -47,12 +48,9 @@ eval_ast({symbol, X}, Env) ->
     {ok, V} -> V;
     error -> {error, "unknown symbol"}
   end;
-eval_ast({list, L}, Env) ->
+eval_ast({seq, T, L}, Env) ->
   NL = lists:map(fun (V) -> eval(V, Env) end, L),
-  {list, NL};
-eval_ast({vector, L}, Env) ->
-  NL = lists:map(fun (V) -> eval(V, Env) end, L),
-  {vector, NL};
+  {seq, T, NL};
 eval_ast({hashmap, M}, Env) ->
   NM = maps:map(fun (_, V) -> eval(V, Env) end, M),
   {hashmap, NM};

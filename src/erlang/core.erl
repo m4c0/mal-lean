@@ -25,21 +25,21 @@ mult(_) -> {error, "invalid parameters"}.
 dv([{number, A},{number, B}]) -> {number, A div B};
 dv(_) -> {error, "invalid parameters"}.
 
-count([{Seq, L}]) when Seq == list; Seq == vector -> {number, length(L)};
-count([{nil, _}]) -> {number, 0};
+count([{seq, Seq, L}]) when Seq == list; Seq == vector -> {number, length(L)};
+count([nil]) -> {number, 0};
 count(_) -> {error, "invalid parameters for count"}.
 
-empty([{Seq, []}]) when Seq == list; Seq == vector -> {boolean, true};
+empty([{seq, Seq, []}]) when Seq == list; Seq == vector -> {boolean, true};
 empty([_]) -> {boolean, false};
 empty(_) -> {error, "invalid parameters for empty?"}.
 
-list(X) -> {list, X}.
+list(X) -> {seq, list, X}.
 
-listq([{Seq, _}]) when Seq == list; Seq == vector -> {boolean, true};
+listq([{seq, Seq, _}]) when Seq == list; Seq == vector -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
-prn([]) -> {nil, nil};
+prn([]) -> nil;
 prn([X|Xs]) -> 
   io:format("~s~n", [printer:pr_str(X, false)]),
   prn(Xs).

@@ -38,28 +38,29 @@ rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
 
-eval({list, []}, _) -> {list, []};
-eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
+eval({seq, list, []}, _) -> {seq, list, []};
+eval({seq, list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   case eval(V, Env) of
     {error, X} -> {error, X};
     VV -> env:set(Env, K, VV), VV
   end;
-eval({list, [{symbol, "def!"}|_]}, _) ->
+eval({seq, list, [{symbol, "def!"}|_]}, _) ->
   {error, "invalid def! signature"};
-eval({list, [{symbol, "let*"},{Seq, As},P]}, Env) when Seq == list; Seq == vector ->
+eval({seq, list, [{symbol, "let*"},{seq, _, As},P]}, Env) ->
   NEnv = env:new(Env),
   case bind(As, NEnv) of
     ok -> eval(P, NEnv);
     X -> X
   end;
-eval({list, [{symbol, "let*"}|_]}, _) ->
+eval({seq, list, [{symbol, "let*"}|_]}, _) ->
   {error, "invalid let* signature"};
-eval({list, L}, Env) ->
-  case eval_ast({list, L}, Env) of
-    {list, [{lambda, Fn}|NL]} -> Fn(NL);
+eval({seq, list, L}, Env) ->
+  case eval_ast({seq, list, L}, Env) of
+    {seq, list, [{lambda, Fn}|NL]} -> Fn(NL);
+    {seq, list, _} -> {error, "lists must start with a lambda to be eval'd"};
     X -> X
   end;
-eval({vector, V}, Env) -> eval_ast({vector, V}, Env);
+eval({seq, vector, V}, Env) -> eval_ast({seq, vector, V}, Env);
 eval({hashmap, V}, Env) -> eval_ast({hashmap, V}, Env);
 eval(X, Env) -> eval_ast(X, Env).
 
@@ -72,7 +73,7 @@ eval_ast({symbol, X}, Env) ->
     {ok, V} -> V;
     error -> {error, io_lib:format("~s not found", [X])}
   end;
-eval_ast({Seq, L}, Env) when Seq == list; Seq == vector ->
+eval_ast({seq, Seq, L}, Env) ->
   Fn = fun (V, Acc) when is_list(Acc) ->
            case eval(V, Env) of
              {error, X} -> {error, X};
@@ -81,7 +82,7 @@ eval_ast({Seq, L}, Env) when Seq == list; Seq == vector ->
            (_, X) -> X
        end,
   case lists:foldl(Fn, [], L) of
-    NL when is_list(NL) -> {Seq, lists:reverse(NL)};
+    NL when is_list(NL) -> {seq, Seq, lists:reverse(NL)};
     X -> X
   end;
 eval_ast({hashmap, M}, Env) ->

@@ -36,7 +36,7 @@ read_atom(T, Toks) -> {T, Toks}.
 read_quotish(Sym, Toks) ->
   case read_form(Toks) of
     ?ErrC;
-    {T, Rest} -> {{list, [?Sym(Sym), T]}, Rest}
+    {T, Rest} -> {{seq, list, [?Sym(Sym), T]}, Rest}
   end.
 
 read_meta(Toks) ->
@@ -45,12 +45,12 @@ read_meta(Toks) ->
     {LHS, Rest} ->
       case read_form(Rest) of
         {{error, M}, _} -> ?Err2(M);
-        {RHS, FinalRest} -> {{list, [?Sym("with-meta"), RHS, LHS]}, FinalRest}
+        {RHS, FinalRest} -> {{seq, list, [?Sym("with-meta"), RHS, LHS]}, FinalRest}
       end
   end.
 
 seq(_, _, [], _) -> ?Err2("unbalanced sequence");
-seq(End, Tp, [End|Toks], Acc) -> {{Tp, lists:reverse(Acc)}, Toks};
+seq(End, Tp, [End|Toks], Acc) -> {{seq, Tp, lists:reverse(Acc)}, Toks};
 seq(End, Tp, Toks, Acc) ->
   case read_form(Toks) of
     ?ErrC;

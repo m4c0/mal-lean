@@ -11,8 +11,8 @@ pr_str({keyword, S}, _) -> S;
 pr_str({number, N}, _) -> integer_to_list(N);
 pr_str({string, S}, false) -> S;
 pr_str({string, S}, true) -> print_str(S);
-pr_str({list, L}, R) -> "(" ++ print_list(L, R) ++ ")";
-pr_str({vector, L}, R) -> "[" ++ print_list(L, R) ++ "]";
+pr_str({seq, list, L}, R) -> "(" ++ print_list(L, R) ++ ")";
+pr_str({seq, vector, L}, R) -> "[" ++ print_list(L, R) ++ "]";
 pr_str({hashmap, L}, R) -> "{" ++ print_map(L, R) ++ "}";
 pr_str(X, _) -> io_lib:format("error: unknown result~n       ~p", [X]).
 
