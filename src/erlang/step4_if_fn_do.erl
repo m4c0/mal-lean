@@ -1,24 +1,9 @@
 -module(step4_if_fn_do).
--export([main/1, add/1, sub/1, mult/1, dv/1]).
-
-add([{number, A},{number, B}]) -> {number, A+B};
-add(_) -> {error, "invalid parameters"}.
-
-sub([{number, A},{number, B}]) -> {number, A-B};
-sub(_) -> {error, "invalid parameters"}.
-
-mult([{number, A},{number, B}]) -> {number, A*B};
-mult(_) -> {error, "invalid parameters"}.
-
-dv([{number, A},{number, B}]) -> {number, A div B};
-dv(_) -> {error, "invalid parameters"}.
+-export([main/1]).
 
 main(_) ->
   Env = env:new(nil),
-  env:set(Env, "+", {lambda, fun step4_if_fn_do:add/1}),
-  env:set(Env, "-", {lambda, fun step4_if_fn_do:sub/1}),
-  env:set(Env, "*", {lambda, fun step4_if_fn_do:mult/1}),
-  env:set(Env, "/", {lambda, fun step4_if_fn_do:dv/1}),
+  maps:foreach(fun (K, V) -> env:set(Env, K, V) end, core:ns()),
   repl(Env).
 
 repl(Env) ->
