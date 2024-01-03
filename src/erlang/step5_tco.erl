@@ -76,11 +76,7 @@ bind(_, _) -> {error, "invalid parameter pair"}.
 %% eval bits
 
 eval_list([], _) -> {seq, list, []};
-eval_list([{symbol, "do"}|L], Env) ->
-  case eval_ast({seq, list, L}, Env) of
-    {seq, list, NL} -> lists:last(NL);
-    X -> X
-  end;
+eval_list([{symbol, "do"}|L], Env) -> eval_do(L, Env);
 eval_list([{symbol, "if"},Cond,T], Env) -> eval_if(Cond, T, nil, Env);
 eval_list([{symbol, "if"},Cond,T,F], Env) -> eval_if(Cond, T, F, Env);
 eval_list([{symbol, "fn*"},{seq,_,Binds},Body], Env) ->
@@ -119,4 +115,12 @@ eval_if(Cond, T, F, Env) ->
     nil -> eval(F, Env);
     {error, X} -> {error, X};
     _ -> eval(T, Env)
+  end.
+
+eval_do([], _) -> {error, "do'ng an empty list"};
+eval_do([E], Env) -> eval(E, Env);
+eval_do([E|L], Env) ->
+  case eval(E, Env) of
+    {error, X} -> {error, X};
+    _ -> eval_do(L, Env)
   end.
