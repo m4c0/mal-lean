@@ -74,6 +74,15 @@ eval_ast({Seq, L}, Env) when Seq == list; Seq == vector ->
     X -> X
   end;
 eval_ast({hashmap, M}, Env) ->
-  NM = maps:map(fun (_, V) -> eval(V, Env) end, M),
-  {hashmap, NM};
+  Fn = fun (K, V, Acc) when is_map(Acc) ->
+           case eval(V, Env) of
+             {error, X} -> {error, X};
+             X -> Acc#{K => X}
+           end;
+           (_, _, X) -> X
+       end,
+  case maps:fold(Fn, #{}, M) of
+    NM when is_map(NM) -> {hashmap, NM};
+    X -> X
+  end;
 eval_ast(X, _) -> X.
