@@ -3,17 +3,17 @@
 
 new(Outer) -> {map_new(), Outer}.
 
-set({Pid, _}, {symbol, K}, V) -> map_set(Pid, K, V).
+set({Pid, _}, K, V) -> map_set(Pid, K, V).
 
 find(nil, _) -> error;
-find({Pid, Outer}, {symbol, K}) -> 
+find({Pid, Outer}, K) -> 
   case map_find(Pid, K) of
     {ok, _} -> {Pid, Outer};
-    error -> find(Outer, {symbol, K})
+    error -> find(Outer, K)
   end.
 
-get({Pid, Outer}, {symbol, K}) ->
-  case find({Pid, Outer}, {symbol, K}) of
+get({Pid, Outer}, K) ->
+  case find({Pid, Outer}, K) of
     error -> error;
     {OwnerPid, _} -> map_find(OwnerPid, K)
   end.
