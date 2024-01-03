@@ -38,9 +38,10 @@ read(X) -> reader:read_str(X).
 
 eval({list, []}, _) -> {list, []};
 eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
-  VV = eval(V, Env),
-  env:set(Env, K, VV),
-  VV;
+  case eval(V, Env) of
+    {error, X} -> {error, X};
+    VV -> env:set(Env, K, VV), VV
+  end;
 eval({list, [{symbol, "def!"}|_]}, _) ->
   {error, "invalid def! signature"};
 eval({list, [{symbol, "let*"}|_]}, _) ->
