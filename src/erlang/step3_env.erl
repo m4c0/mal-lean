@@ -13,12 +13,15 @@ mult(_) -> {error, "invalid parameters"}.
 dv([{number, A},{number, B}]) -> {number, A div B};
 dv(_) -> {error, "invalid parameters"}.
 
-main(A) ->
+main(_) ->
   Env = env:new(nil),
   env:set(Env, "+", {lambda, fun step3_env:add/1}),
   env:set(Env, "-", {lambda, fun step3_env:sub/1}),
   env:set(Env, "*", {lambda, fun step3_env:mult/1}),
   env:set(Env, "/", {lambda, fun step3_env:dv/1}),
+  repl(Env).
+
+repl(Env) ->
   case io:get_line("user> ") of
     eof -> io:fwrite("eof");
     {error, X} -> io:fwrite("error: ~s", [X]);
@@ -26,17 +29,22 @@ main(A) ->
       io:nl(), %% Required on Windows
       io:fwrite("~s", [rep(Line, Env)]),
       io:nl(),
-      main(A)
+      repl(Env)
   end.
 
 rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
+
 eval({list, []}, _) -> {list, []};
+eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
+  VV = eval_ast(V, Env),
+  env:set(Env, K, VV),
+  VV;
 eval({list, [{symbol, "def!"}|_]}, _) ->
-  {error, "def!ed"};
+  {error, "invalid def! signature"};
 eval({list, [{symbol, "let*"}|_]}, _) ->
-  {error, "let*ed"};
+  {error, "invalid let* signature"};
 eval({list, L}, Env) ->
   case eval_ast({list, L}, Env) of
     {list, [{lambda, Fn}|NL]} -> Fn(NL);
@@ -45,6 +53,7 @@ eval({list, L}, Env) ->
 eval({vector, V}, Env) -> eval_ast({vector, V}, Env);
 eval({hashmap, V}, Env) -> eval_ast({hashmap, V}, Env);
 eval(X, Env) -> eval_ast(X, Env).
+
 print(X) -> printer:pr_str(X, true).
 
 eval_ast({symbol, X}, Env) ->
