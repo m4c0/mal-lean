@@ -39,6 +39,11 @@ rep(X, Env) -> print(eval(read(X), Env)).
 read(X) -> reader:read_str(X).
 
 eval({list, []}, _) -> {list, []};
+eval({list, [{symbol, "do"}|L]}, Env) ->
+  case eval_ast({list, L}, Env) of
+    {list, NL} -> lists:last(NL);
+    X -> X
+  end;
 eval({list, [{symbol, "def!"},{symbol, K},V]}, Env) ->
   case eval(V, Env) of
     {error, X} -> {error, X};
