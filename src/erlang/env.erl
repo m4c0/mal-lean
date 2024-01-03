@@ -1,7 +1,8 @@
 -module(env).
--export([new/1,get/2,set/3,find/2]).
+-export([new/1,new/3,get/2,set/3,find/2]).
 
 new(Outer) -> {map_new(), Outer}.
+new(Outer, Binds, Exprs) -> bind(new(Outer), Binds, Exprs).
 
 set({Pid, _}, K, V) -> map_set(Pid, K, V).
 
@@ -17,6 +18,14 @@ get({Pid, Outer}, K) ->
     error -> error;
     {OwnerPid, _} -> map_find(OwnerPid, K)
   end.
+
+%% binder
+
+bind(Env, [], []) -> Env;
+bind(Env, [{symbol, B}|Bs], [E|Es]) ->
+  set(Env, B, E),
+  bind(Env, Bs, Es);
+bind(_, _, _) -> {error, "invalid bind"}.
 
 %% gen_server wrappers
 
