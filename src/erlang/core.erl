@@ -19,6 +19,7 @@ ns() ->
              "println" => fun println/1,
              "prn" => fun prn/1,
              "pr-str" => fun prstr/1,
+             "read-string" => fun readstring/1,
              "str" => fun str/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
@@ -68,6 +69,9 @@ println(L) -> iofmt(L, "", false).
 prn(L) -> iofmt(L, "", true).
 
 prstr(L) -> fmt(L, " ", true).
+
+readstring([{string, X}]) -> reader:read_str(X);
+readstring(_) -> {error, "invalid parameters for read-string"}.
 
 str(L) -> fmt(L, "", false).
 
