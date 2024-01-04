@@ -6,6 +6,7 @@ main(_) ->
   maps:foreach(fun (K, V) -> env:set(Env, K, V) end, core:ns()),
   rep("(def! not (fn* (a) (if a false true)))", Env),
   rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\\nnil)\")))))", Env),
+  env:set(Env, "eval", {lambda, fun (X) -> eval_eval(X, Env) end}),
   repl(Env).
 
 repl(Env) ->
@@ -125,3 +126,6 @@ eval_do([E|L], Env) ->
     {error, X} -> {error, X};
     _ -> eval_do(L, Env)
   end.
+
+eval_eval([E], Env) -> eval(E, Env);
+eval_eval(_, _) -> {error, "invalid eval signature"}.
