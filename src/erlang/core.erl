@@ -19,12 +19,15 @@ ns() ->
              "count" => fun count/1,
              "deref" => fun deref/1,
              "empty?" => fun empty/1,
+             "first" => fun first/1,
              "list" => fun list/1,
              "list?" => fun listq/1,
+             "nth" => fun nth/1,
              "println" => fun println/1,
              "prn" => fun prn/1,
              "pr-str" => fun prstr/1,
              "reset!" => fun reset/1,
+             "rest" => fun rest/1,
              "read-string" => fun readstring/1,
              "slurp" => fun slurp/1,
              "str" => fun str/1,
@@ -88,11 +91,22 @@ empty([{seq, _, []}]) -> {boolean, true};
 empty([_]) -> {boolean, false};
 empty(_) -> {error, "invalid parameters for empty?"}.
 
+first([nil]) -> nil;
+first([{seq, _, []}]) -> nil;
+first([{seq, _, [E|_]}]) -> E;
+first(_) -> {error, "invalid parameters for first"}.
+
 list(X) -> {seq, list, X}.
 
 listq([{seq, list, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
+
+nth([{seq, _, L},{number, N}]) when N >= 0 -> nth(L, N);
+nth(_) -> {error, "invalid parameters for nth"}.
+nth([E|_], 0) -> E;
+nth([_|L], N) when N > 0 -> nth(L, N - 1);
+nth(_, _) -> {error, "invalid range for nth"}.
 
 println(L) -> iofmt(L, "", false).
 
@@ -102,6 +116,11 @@ prstr(L) -> fmt(L, " ", true).
 
 reset([{atom, _} = X, V]) -> put(X, V), V;
 reset(_) -> {error, "invalid parameters for reset"}.
+
+rest([nil]) -> {seq, list, []};
+rest([{seq, _, []}]) -> {seq, list, []};
+rest([{seq, _, [_|L]}]) -> {seq, list, L};
+rest(_) -> {error, "invalid paramters for rest"}.
 
 readstring([{string, X}]) -> reader:read_str(X);
 readstring(_) -> {error, "invalid parameters for read-string"}.
