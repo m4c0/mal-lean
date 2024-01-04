@@ -20,6 +20,7 @@ ns() ->
              "prn" => fun prn/1,
              "pr-str" => fun prstr/1,
              "read-string" => fun readstring/1,
+             "slurp" => fun slurp/1,
              "str" => fun str/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
@@ -72,6 +73,13 @@ prstr(L) -> fmt(L, " ", true).
 
 readstring([{string, X}]) -> reader:read_str(X);
 readstring(_) -> {error, "invalid parameters for read-string"}.
+
+slurp([{string, X}]) ->
+  case file:read_file(X) of
+    {ok, Bin} -> {string, binary_to_list(Bin)};
+    _ -> {error, "file not found"}
+  end;
+slurp(_) -> {error, "invalid parameters for slurp"}.
 
 str(L) -> fmt(L, "", false).
 
