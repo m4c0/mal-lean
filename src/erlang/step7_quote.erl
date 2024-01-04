@@ -86,6 +86,11 @@ bind(_, _) -> {error, "invalid parameter pair"}.
 %% eval bits
 
 eval_list([], _) -> {seq, list, []};
+eval_list([{symbol, "quote"},Ast],_) -> Ast;
+eval_list([{symbol, "quasiquoteexpand"},Ast],_) -> quasiquote:expand(Ast);
+eval_list([{symbol, "quasiquote"},Ast],Env) ->
+  Exp = quasiquote:expand(Ast),
+  eval(Exp, Env);
 eval_list([{symbol, "do"}|L], Env) -> eval_do(L, Env);
 eval_list([{symbol, "if"},Cond,T], Env) -> eval_if(Cond, T, nil, Env);
 eval_list([{symbol, "if"},Cond,T,F], Env) -> eval_if(Cond, T, F, Env);
