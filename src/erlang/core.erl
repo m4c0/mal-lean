@@ -17,6 +17,7 @@ ns() ->
              "atom" => fun atom/1,
              "atom?" => fun atomq/1,
              "concat" => fun concat/1,
+             "conj" => fun conj/1,
              "cons" => fun cons/1,
              "contains?" => fun contains/1,
              "count" => fun count/1,
@@ -108,6 +109,10 @@ concat(X) -> concat(X, []).
 concat([], Acc) -> {seq, list, Acc};
 concat([{seq, _, L}|Rest], Acc) -> concat(Rest, Acc ++ L);
 concat(_, _) -> {error, "invalid parameters for concat"}.
+
+conj([{seq, list, L}|Rest]) -> {seq, list, conj_list(Rest, L)};
+conj([{seq, vector, L}|Rest]) -> {seq, vector, conj_vec(Rest, L)};
+conj(_) -> {error, "invalid parameters for conj"}.
 
 cons([V, {seq, _, L}]) -> {seq, list, [V|L]};
 cons(_) -> {error, "invalid parameters for cons"}.
@@ -298,3 +303,7 @@ check_type(X, [{X, _}]) -> {boolean, true};
 check_type(_, [_]) -> {boolean, false};
 check_type(_, _) -> {error, "invalid parameters"}.
 
+conj_list([], Acc) -> Acc;
+conj_list([E|L], Acc) -> conj_list(L, [E|Acc]).
+
+conj_vec(Rest, List) -> List ++ Rest.
