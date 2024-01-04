@@ -35,13 +35,13 @@ bind(_, _, _) -> {error, "invalid bind"}.
 
 map_new() -> 
   Res = length(get()),
-  put(Res, #{}),
+  put({env, Res}, #{}),
   Res.
 
 map_set(Pid, K, V) -> 
-  Data = get(Pid),
-  put(Pid, Data#{K => V}),
+  Data = get({env, Pid}),
+  put({env, Pid}, Data#{K => V}),
   ok.
 
 map_find(Pid, K) ->
-  maps:find(K, get(Pid)).
+  maps:find(K, get({env, Pid})).
