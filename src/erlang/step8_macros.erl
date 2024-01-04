@@ -34,8 +34,10 @@ rep(X, Env) -> print(eval(read(X), Env)).
 
 read(X) -> reader:read_str(X).
 
-eval({seq, list, V}, Env) -> eval_list(V, Env);
-eval(X, Env) -> eval_ast(X, Env).
+eval(X, Env) -> eval2(macro:expand(X, Env), Env).
+
+eval2({seq, list, V}, Env) -> eval_list(V, Env);
+eval2(X, Env) -> eval_ast(X, Env).
 
 print(X) -> printer:pr_str(X, true).
 
