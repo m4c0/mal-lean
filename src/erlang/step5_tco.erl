@@ -39,7 +39,7 @@ eval_ast({symbol, X}, Env) ->
 eval_ast({seq, Seq, L}, Env) ->
   Fn = fun (V, Acc) when is_list(Acc) ->
            case eval(V, Env) of
-             {error, X} -> {error, X};
+             {error, _} = X -> X;
              X -> [X|Acc]
            end;
            (_, X) -> X
@@ -51,7 +51,7 @@ eval_ast({seq, Seq, L}, Env) ->
 eval_ast({hashmap, M}, Env) ->
   Fn = fun (K, V, Acc) when is_map(Acc) ->
            case eval(V, Env) of
-             {error, X} -> {error, X};
+             {error, _} = X -> X;
              X -> Acc#{K => X}
            end;
            (_, _, X) -> X
