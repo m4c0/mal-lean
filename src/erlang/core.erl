@@ -12,16 +12,21 @@ ns() ->
              "<=" => fun lte/1,
              ">=" => fun gte/1,
              "=" => fun eq/1,
+             "atom" => fun atom/1,
+             "atom?" => fun atomq/1,
              "count" => fun count/1,
+             "deref" => fun deref/1,
              "empty?" => fun empty/1,
              "list" => fun list/1,
              "list?" => fun listq/1,
              "println" => fun println/1,
              "prn" => fun prn/1,
              "pr-str" => fun prstr/1,
+             "reset!" => fun reset/1,
              "read-string" => fun readstring/1,
              "slurp" => fun slurp/1,
-             "str" => fun str/1}).
+             "str" => fun str/1,
+             "swap!" => fun swap/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
 add(_) -> {error, "invalid parameters"}.
@@ -51,9 +56,22 @@ eq([{seq, _, A},{seq, _, B}]) -> seq_eq(A, B);
 eq([A,B]) -> {boolean, A == B};
 eq(_) -> {error, "invalid parameters for ="}.
 
+atom([X]) ->
+  Id = {atom, length(get())},
+  put(Id, X),
+  Id;
+atom(_) -> {error, "invalid parameters for atom"}.
+
+atomq([{atom, _}]) -> {boolean, true};
+atomq([_]) -> {boolean, false};
+atomq(_) -> {error, "invalid parameters for atom?"}.
+
 count([{seq, _, L}]) -> {number, length(L)};
 count([nil]) -> {number, 0};
 count(_) -> {error, "invalid parameters for count"}.
+
+deref([{atom, _} = X]) -> get(X);
+deref(_) -> {error, "invalid parameters for deref"}.
 
 empty([{seq, _, []}]) -> {boolean, true};
 empty([_]) -> {boolean, false};
@@ -71,6 +89,9 @@ prn(L) -> iofmt(L, "", true).
 
 prstr(L) -> fmt(L, " ", true).
 
+reset([{atom, _} = X, V]) -> put(X, V), V;
+reset(_) -> {error, "invalid parameters for reset"}.
+
 readstring([{string, X}]) -> reader:read_str(X);
 readstring(_) -> {error, "invalid parameters for read-string"}.
 
@@ -82,6 +103,12 @@ slurp([{string, X}]) ->
 slurp(_) -> {error, "invalid parameters for slurp"}.
 
 str(L) -> fmt(L, "", false).
+
+swap([{atom, _} = X,{lambda, Fn}|As]) ->
+  V = Fn([get(X)|As]),
+  put(X, V),
+  V;
+swap(_) -> {error, "invalid parameters for swap"}.
 
 %% helpers
 
