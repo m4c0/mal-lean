@@ -14,6 +14,8 @@ ns() ->
              "=" => fun eq/1,
              "atom" => fun atom/1,
              "atom?" => fun atomq/1,
+             "concat" => fun concat/1,
+             "cons" => fun cons/1,
              "count" => fun count/1,
              "deref" => fun deref/1,
              "empty?" => fun empty/1,
@@ -65,6 +67,14 @@ atom(_) -> {error, "invalid parameters for atom"}.
 atomq([{atom, _}]) -> {boolean, true};
 atomq([_]) -> {boolean, false};
 atomq(_) -> {error, "invalid parameters for atom?"}.
+
+concat(X) -> concat(X, []).
+concat([], Acc) -> {seq, list, Acc};
+concat([{seq, _, L}|Rest], Acc) -> concat(Rest, Acc ++ L);
+concat(_, _) -> {error, "invalid parameters for concat"}.
+
+cons([V, {seq, T, L}]) -> {seq, T, [V|L]};
+cons(_) -> {error, "invalid parameters for cons"}.
 
 count([{seq, _, L}]) -> {number, length(L)};
 count([nil]) -> {number, 0};
