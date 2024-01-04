@@ -110,6 +110,13 @@ eval_list([{symbol, "def!"},{symbol, K},V], Env) ->
   end;
 eval_list([{symbol, "def!"}|_], _) ->
   {error, "invalid def! signature"};
+eval_list([{symbol, "defmacro!"},{symbol, K},V], Env) ->
+  case eval(V, Env) of
+    {error, X} -> {error, X};
+    {lambda, L} -> VV = {macro, L}, env:set(Env, K, VV), VV
+  end;
+eval_list([{symbol, "defmacro!"}|_], _) ->
+  {error, "invalid def! signature"};
 eval_list([{symbol, "let*"},{seq,_,As},P], Env) ->
   NEnv = env:new(Env),
   case bind(As, NEnv) of

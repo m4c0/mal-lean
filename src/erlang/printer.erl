@@ -3,6 +3,7 @@
 
 pr_str({error, E}, _) -> "error: " ++ E;
 pr_str({lambda, _}, _) -> "#<function>";
+pr_str({macro, _}, _) -> "#<macro>";
 pr_str(nil, _) -> "nil";
 pr_str({atom, _} = X, _) -> "(atom " ++ pr_str(get(X), false) ++ ")";
 pr_str({boolean, true}, _) -> "true";
