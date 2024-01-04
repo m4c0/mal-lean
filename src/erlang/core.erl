@@ -46,6 +46,7 @@ ns() ->
              "reset!" => fun reset/1,
              "rest" => fun rest/1,
              "read-string" => fun readstring/1,
+             "seq" => fun seq/1,
              "sequential?" => fun sequential/1,
              "slurp" => fun slurp/1,
              "str" => fun str/1,
@@ -222,6 +223,12 @@ rest(_) -> {error, "invalid paramters for rest"}.
 
 readstring([{string, X}]) -> reader:read_str(X);
 readstring(_) -> {error, "invalid parameters for read-string"}.
+
+seq([{string, [_|_]=S}]) ->
+  L = lists:map(fun (C) -> {string, [C]} end, S),
+  {seq, list, L};
+seq([{seq, _, [_|_]=L}]) -> {seq, list, L};
+seq(_) -> nil.
 
 sequential([{seq, _, _}]) -> {boolean, true};
 sequential([_]) -> {boolean, false};
