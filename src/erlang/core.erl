@@ -53,6 +53,7 @@ ns() ->
              "symbol" => fun symbol/1,
              "symbol?" => fun symbolq/1,
              "swap!" => fun swap/1,
+             "time-ms" => fun timems/1,
              "true?" => fun trueq/1,
              "throw" => fun throwi/1,
              "vals" => fun vals/1,
@@ -250,6 +251,9 @@ symbolq(X) -> check_type(symbol, X).
 
 throwi([X]) -> {error, X};
 throwi(_) -> {error, "invalid parameters for throw"}.
+
+timems([]) -> {number, erlang:system_time(millisecond)};
+timems(_) -> {error, "invalid parameters for time-ms"}.
 
 trueq([{boolean, true}]) -> {boolean, true};
 trueq([_]) -> {boolean, false};
