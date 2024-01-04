@@ -3,6 +3,8 @@
 
 expand({seq, list, [{symbol, "unquote"}, E]}) -> E;
 expand({seq, list, L}) -> qq(L);
+expand({seq, vector, L}) ->
+  {seq, list, [{symbol, "vec"}, qq(L)]};
 expand({T, _} = X) when T == hashmap; T == symbol ->
   {seq, list, [{symbol, "quote"}, X]};
 expand(X) -> X.
