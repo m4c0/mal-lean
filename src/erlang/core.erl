@@ -48,6 +48,7 @@ ns() ->
              "symbol?" => fun symbolq/1,
              "swap!" => fun swap/1,
              "true?" => fun trueq/1,
+             "throw" => fun throwi/1,
              "vals" => fun vals/1,
              "vec" => fun vec/1,
              "vector" => fun vector/1,
@@ -229,6 +230,9 @@ symbol(_) -> {error, "invalid parameters for symbol"}.
 symbolq([{symbol, _}]) -> {boolean, true};
 symbolq([_]) -> {boolean, false};
 symbolq(_) -> {error, "invalid parameters for symbol?"}.
+
+throwi([{string, X}]) -> {error, X};
+throwi(_) -> {error, "invalid parameters for throw"}.
 
 trueq([{boolean, true}]) -> {boolean, true};
 trueq([_]) -> {boolean, false};
