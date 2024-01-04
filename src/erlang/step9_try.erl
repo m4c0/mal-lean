@@ -89,6 +89,17 @@ bind(_, _) -> {error, "invalid parameter pair"}.
 %% eval bits
 
 eval_list([], _) -> {seq, list, []};
+eval_list([{symbol, "try*"},Ast],Env) ->
+  case try_eval(Ast, Env) of
+    {error, X} -> X;
+    X -> X
+  end;
+eval_list([{symbol, "try*"},Ast,{seq, list, [{symbol, "catch*"},{symbol, _}=P,Cast]}],Env) ->
+  case try_eval(Ast, Env) of
+    {error, Err} -> eval(Cast, env:new(Env, [P], [Err]));
+    X -> X
+  end;
+eval_list([{symbol, "try*"}|_],_) -> {error, "invalid signature for try*"};
 eval_list([{symbol, "quote"},Ast],_) -> Ast;
 eval_list([{symbol, "quasiquoteexpand"},Ast],_) -> quasiquote:expand(Ast);
 eval_list([{symbol, "quasiquote"},Ast],Env) ->
@@ -153,3 +164,9 @@ eval_do([E|L], Env) ->
 
 eval_eval([E], Env) -> eval(E, Env);
 eval_eval(_, _) -> {error, "invalid eval signature"}.
+
+try_eval(Ast, Env) ->
+  case eval(Ast, Env) of
+    {error, X} when is_list(X) -> {error, {string, X}};
+    X -> X
+  end.
