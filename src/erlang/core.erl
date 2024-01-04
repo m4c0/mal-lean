@@ -231,7 +231,7 @@ symbolq([{symbol, _}]) -> {boolean, true};
 symbolq([_]) -> {boolean, false};
 symbolq(_) -> {error, "invalid parameters for symbol?"}.
 
-throwi([{string, X}]) -> {error, X};
+throwi([X]) -> {error, X};
 throwi(_) -> {error, "invalid parameters for throw"}.
 
 trueq([{boolean, true}]) -> {boolean, true};

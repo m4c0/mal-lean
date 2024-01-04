@@ -1,7 +1,8 @@
 -module(printer).
 -export([pr_str/2]).
 
-pr_str({error, E}, _) -> "error: " ++ E;
+pr_str({error, E}, _) when is_list(E) -> "error: " ++ E;
+pr_str({error, E}, _) -> "error: " ++ pr_str(E, true);
 pr_str({lambda, _}, _) -> "#<function>";
 pr_str({macro, _}, _) -> "#<macro>";
 pr_str(nil, _) -> "nil";
