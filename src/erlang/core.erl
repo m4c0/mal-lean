@@ -12,6 +12,7 @@ ns() ->
              "<=" => fun lte/1,
              ">=" => fun gte/1,
              "=" => fun eq/1,
+             "apply" => fun applyi/1,
              "assoc" => fun assoc/1,
              "atom" => fun atom/1,
              "atom?" => fun atomq/1,
@@ -82,6 +83,9 @@ eq([{seq, _, A},{seq, _, B}]) -> seq_eq(A, B);
 eq([{hashmap, A},{hashmap, B}]) -> map_eq(A, B);
 eq([A,B]) -> {boolean, A == B};
 eq(_) -> {error, "invalid parameters for ="}.
+
+applyi([{lambda, Fn},E|L]) -> Fn(flat([E|L]));
+applyi(_) -> {error, "invalid parameters for apply"}.
 
 assoc([{hashmap, _}=E]) -> E;
 assoc([{hashmap, M},{T, _}=K,V|As]) when T == string; T == keyword ->
@@ -281,3 +285,8 @@ map_eq(A, B) ->
                 (_, _, _) -> {boolean, false} end,
             {boolean, true}, M).
 
+%% flat in fold-right style - inefficient, but works
+flat(L) -> flat(L, []).
+flat([], Acc) -> Acc;
+flat([{seq, _, S}|L], Acc) -> flat(L, Acc ++ S);
+flat([X|L], Acc) -> flat(L, Acc ++ [X]).
