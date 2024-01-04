@@ -31,6 +31,7 @@ ns() ->
              "keyword?" => fun keywordq/1,
              "list" => fun list/1,
              "list?" => fun listq/1,
+             "map" => fun mapi/1,
              "map?" => fun mapq/1,
              "nil?" => fun nilq/1,
              "nth" => fun nth/1,
@@ -166,6 +167,11 @@ list(X) -> {seq, list, X}.
 listq([{seq, list, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
+
+%% TODO: check for errors
+mapi([{lambda, Fn},{seq, _, L}]) -> 
+  {seq, list, lists:map(fun (A) -> Fn([A]) end, L)};
+mapi(_) -> {error, "invalid parameters for map"}.
 
 mapq([{hashmap, _}]) -> {boolean, true};
 mapq([_]) -> {boolean, false};
