@@ -34,10 +34,14 @@ bind(_, _, _) -> {error, "invalid bind"}.
 %% gen_server wrappers
 
 map_new() -> 
-  case gen_server:start_link(env_srv, [], []) of
-    {ok, Pid} -> Pid;
-    _ -> error
-  end.
+  Res = length(get()),
+  put(Res, #{}),
+  Res.
 
-map_set(Pid, K, V) -> gen_server:call(Pid, {set, K, V}).
-map_find(Pid, K) -> gen_server:call(Pid, {find, K}).
+map_set(Pid, K, V) -> 
+  Data = get(Pid),
+  put(Pid, Data#{K => V}),
+  ok.
+
+map_find(Pid, K) ->
+  maps:find(K, get(Pid)).
