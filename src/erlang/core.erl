@@ -170,9 +170,14 @@ listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
 %% TODO: check for errors
-mapi([{lambda, Fn},{seq, _, L}]) -> 
-  {seq, list, lists:map(fun (A) -> Fn([A]) end, L)};
+mapi([{lambda, Fn},{seq, _, L}]) -> mapi(Fn, L, []);
 mapi(_) -> {error, "invalid parameters for map"}.
+mapi(_, [], Acc) -> {seq, list, lists:reverse(Acc)};
+mapi(Fn, [E|L], Acc) ->
+  case Fn([E]) of
+    {error, _} = X -> X;
+    X -> mapi(Fn, L, [X|Acc])
+  end.
 
 mapq([{hashmap, _}]) -> {boolean, true};
 mapq([_]) -> {boolean, false};
