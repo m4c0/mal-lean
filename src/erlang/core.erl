@@ -77,6 +77,7 @@ gte([{number, A},{number, B}]) -> {boolean, A >= B};
 gte(_) -> {error, "invalid parameters"}.
 
 eq([{seq, _, A},{seq, _, B}]) -> seq_eq(A, B);
+eq([{hashmap, A},{hashmap, B}]) -> map_eq(A, B);
 eq([A,B]) -> {boolean, A == B};
 eq(_) -> {error, "invalid parameters for ="}.
 
@@ -257,3 +258,11 @@ seq_eq([A|AA],[B|BB]) ->
     X -> X
   end;
 seq_eq(_, _) -> {boolean, false}.
+
+map_eq(A, B) ->
+  M = maps:merge_with(fun (_, VA, VB) -> {pair, VA, VB} end, A, B),
+  maps:fold(fun (_, _, {boolean, false}) -> false;
+                (_, {pair, PA, PB}, _) -> eq([PA, PB]);
+                (_, _, _) -> {boolean, false} end,
+            {boolean, true}, M).
+
