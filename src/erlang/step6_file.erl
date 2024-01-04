@@ -5,6 +5,7 @@ main(_) ->
   Env = env:new(nil),
   maps:foreach(fun (K, V) -> env:set(Env, K, V) end, core:ns()),
   rep("(def! not (fn* (a) (if a false true)))", Env),
+  rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\\nnil)\")))))", Env),
   repl(Env).
 
 repl(Env) ->
