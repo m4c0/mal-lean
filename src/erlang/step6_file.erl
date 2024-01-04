@@ -7,9 +7,15 @@ main(As) ->
   rep("(def! not (fn* (a) (if a false true)))", Env),
   rep("(def! load-file (fn* (f) (eval (read-string (str \"(do \" (slurp f) \"\\nnil)\")))))", Env),
   env:set(Env, "eval", {lambda, fun (X) -> eval_eval(X, Env) end}),
-  MA = lists:map(fun (A) -> {string, A} end, As),
-  env:set(Env, "*ARGV*", {seq, list, MA}),
-  repl(Env).
+  case As of
+    [Fn|AA] -> 
+      MA = lists:map(fun (A) -> {string, A} end, AA),
+      env:set(Env, "*ARGV*", {seq, list, MA}),
+      rep("(load-file \"" ++ Fn ++ "\")", Env);
+    [] ->
+      env:set(Env, "*ARGV*", {seq, list, []}),
+      repl(Env)
+  end.
 
 repl(Env) ->
   case io:get_line("user> ") of
