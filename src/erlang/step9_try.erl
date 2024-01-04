@@ -47,7 +47,7 @@ print(X) -> printer:pr_str(X, true).
 eval_ast({symbol, X}, Env) ->
   case env:get(Env, X) of
     {ok, V} -> V;
-    error -> {error, io_lib:format("~s not found", [X])}
+    error -> {error, io_lib:format("'~s' not found", [X])}
   end;
 eval_ast({seq, Seq, L}, Env) ->
   Fn = fun (V, Acc) when is_list(Acc) ->
