@@ -28,7 +28,8 @@ ns() ->
              "read-string" => fun readstring/1,
              "slurp" => fun slurp/1,
              "str" => fun str/1,
-             "swap!" => fun swap/1}).
+             "swap!" => fun swap/1,
+             "vec" => fun vec/1}).
 
 add([{number, A},{number, B}]) -> {number, A+B};
 add(_) -> {error, "invalid parameters"}.
@@ -73,7 +74,7 @@ concat([], Acc) -> {seq, list, Acc};
 concat([{seq, _, L}|Rest], Acc) -> concat(Rest, Acc ++ L);
 concat(_, _) -> {error, "invalid parameters for concat"}.
 
-cons([V, {seq, T, L}]) -> {seq, T, [V|L]};
+cons([V, {seq, _, L}]) -> {seq, list, [V|L]};
 cons(_) -> {error, "invalid parameters for cons"}.
 
 count([{seq, _, L}]) -> {number, length(L)};
@@ -119,6 +120,9 @@ swap([{atom, _} = X,{lambda, Fn}|As]) ->
   put(X, V),
   V;
 swap(_) -> {error, "invalid parameters for swap"}.
+
+vec([{seq, _, L}]) -> {seq, vector, L};
+vec(_) -> {error, "invalid parameters for vec"}.
 
 %% helpers
 
