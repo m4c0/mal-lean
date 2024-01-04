@@ -24,6 +24,7 @@ ns() ->
              "dissoc" => fun dissoc/1,
              "empty?" => fun empty/1,
              "false?" => fun falseq/1,
+             "fn?" => fun fnq/1,
              "first" => fun first/1,
              "get" => fun geti/1,
              "hash-map" => fun hashmap/1,
@@ -32,9 +33,11 @@ ns() ->
              "keyword?" => fun keywordq/1,
              "list" => fun list/1,
              "list?" => fun listq/1,
+             "macro?" => fun macroq/1,
              "map" => fun mapi/1,
              "map?" => fun mapq/1,
              "nil?" => fun nilq/1,
+             "number?" => fun numberq/1,
              "nth" => fun nth/1,
              "println" => fun println/1,
              "prn" => fun prn/1,
@@ -45,6 +48,7 @@ ns() ->
              "sequential?" => fun sequential/1,
              "slurp" => fun slurp/1,
              "str" => fun str/1,
+             "string?" => fun stringq/1,
              "symbol" => fun symbol/1,
              "symbol?" => fun symbolq/1,
              "swap!" => fun swap/1,
@@ -98,9 +102,7 @@ atom([X]) ->
   Id;
 atom(_) -> {error, "invalid parameters for atom"}.
 
-atomq([{atom, _}]) -> {boolean, true};
-atomq([_]) -> {boolean, false};
-atomq(_) -> {error, "invalid parameters for atom?"}.
+atomq(X) -> check_type(atom, X).
 
 concat(X) -> concat(X, []).
 concat([], Acc) -> {seq, list, Acc};
@@ -142,6 +144,8 @@ first([{seq, _, []}]) -> nil;
 first([{seq, _, [E|_]}]) -> E;
 first(_) -> {error, "invalid parameters for first"}.
 
+fnq(X) -> check_type(lambda, X).
+
 geti([nil, _]) -> nil;
 geti([{hashmap, M},{T, _}=K]) when T == string; T == keyword ->
   case maps:find(K, M) of
@@ -163,9 +167,7 @@ keyword([{string, S}]) -> {keyword, ":" ++ S};
 keyword([{keyword, _} = X]) -> X;
 keyword(_) -> {error, "invalid parameters for keyword"}.
 
-keywordq([{keyword, _}]) -> {boolean, true};
-keywordq([_]) -> {boolean, false};
-keywordq(_) -> {error, "invalid parameters for keyword?"}.
+keywordq(X) -> check_type(keyword, X).
 
 list(X) -> {seq, list, X}.
 
@@ -173,7 +175,8 @@ listq([{seq, list, _}]) -> {boolean, true};
 listq([_]) -> {boolean, false};
 listq(_) -> {error, "invalid parameters for list?"}.
 
-%% TODO: check for errors
+macroq(X) -> check_type(macro, X).
+
 mapi([{lambda, Fn},{seq, _, L}]) -> mapi(Fn, L, []);
 mapi(_) -> {error, "invalid parameters for map"}.
 mapi(_, [], Acc) -> {seq, list, lists:reverse(Acc)};
@@ -183,9 +186,7 @@ mapi(Fn, [E|L], Acc) ->
     X -> mapi(Fn, L, [X|Acc])
   end.
 
-mapq([{hashmap, _}]) -> {boolean, true};
-mapq([_]) -> {boolean, false};
-mapq(_) -> {error, "invalid parameters for map?"}.
+mapq(X) -> check_type(hashmap, X).
 
 nilq([nil]) -> {boolean, true};
 nilq([_]) -> {boolean, false};
@@ -196,6 +197,8 @@ nth(_) -> {error, "invalid parameters for nth"}.
 nth([E|_], 0) -> E;
 nth([_|L], N) when N > 0 -> nth(L, N - 1);
 nth(_, _) -> {error, "invalid range for nth"}.
+
+numberq(X) -> check_type(number, X).
 
 println(L) -> iofmt(L, "", false).
 
@@ -227,6 +230,8 @@ slurp(_) -> {error, "invalid parameters for slurp"}.
 
 str(L) -> fmt(L, "", false).
 
+stringq(X) -> check_type(string, X).
+
 swap([{atom, _} = X,{lambda, Fn}|As]) ->
   V = Fn([get(X)|As]),
   put(X, V),
@@ -236,9 +241,7 @@ swap(_) -> {error, "invalid parameters for swap"}.
 symbol([{string, S}]) -> {symbol, S};
 symbol(_) -> {error, "invalid parameters for symbol"}.
 
-symbolq([{symbol, _}]) -> {boolean, true};
-symbolq([_]) -> {boolean, false};
-symbolq(_) -> {error, "invalid parameters for symbol?"}.
+symbolq(X) -> check_type(symbol, X).
 
 throwi([X]) -> {error, X};
 throwi(_) -> {error, "invalid parameters for throw"}.
@@ -290,3 +293,8 @@ flat(L) -> flat(L, []).
 flat([], Acc) -> Acc;
 flat([{seq, _, S}|L], Acc) -> flat(L, Acc ++ S);
 flat([X|L], Acc) -> flat(L, Acc ++ [X]).
+
+check_type(X, [{X, _}]) -> {boolean, true};
+check_type(_, [_]) -> {boolean, false};
+check_type(_, _) -> {error, "invalid parameters"}.
+
