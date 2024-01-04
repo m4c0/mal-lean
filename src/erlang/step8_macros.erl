@@ -117,6 +117,7 @@ eval_list([{symbol, "defmacro!"},{symbol, K},V], Env) ->
   end;
 eval_list([{symbol, "defmacro!"}|_], _) ->
   {error, "invalid def! signature"};
+eval_list([{symbol, "macroexpand"},E], Env) -> macro:expand(E, Env);
 eval_list([{symbol, "let*"},{seq,_,As},P], Env) ->
   NEnv = env:new(Env),
   case bind(As, NEnv) of
